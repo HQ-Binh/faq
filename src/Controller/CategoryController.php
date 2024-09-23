@@ -9,6 +9,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 
 class CategoryController extends AbstractController
@@ -103,8 +104,13 @@ public function getAllCategories(): JsonResponse
     {
         $category = $this->entityManager->getRepository(Category::class)->find($id);
 
+        // if (!$category) {
+        //     return new JsonResponse(['message' => 'Category not found'], JsonResponse::HTTP_NOT_FOUND);
+        // }
         if (!$category) {
-            return new JsonResponse(['message' => 'Category not found'], JsonResponse::HTTP_NOT_FOUND);
+            // throw $this->createNotFoundException('The product does not exist');
+    
+            throw new NotFoundHttpException('The product does not exist');
         }
 
         $data = json_decode($request->getContent(), true);

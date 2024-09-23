@@ -11,6 +11,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 use App\Repository\QuestionRepository;
+use Symfony\Component\HttpKernel\Attribute\MapQueryParameter;
 
 class QuestionController extends AbstractController
 {
@@ -192,6 +193,40 @@ return new JsonResponse($questions);
             ];
         }
 
+        return new JsonResponse($data);
+    }
+
+    #[Route('/questions', methods: ['GET'])]
+    public function listQuestions(
+        EntityManagerInterface $em,
+        #[MapQueryParameter] ?string $content = null,
+        #[MapQueryParameter] ?int $category_id = null
+    ): JsonResponse {
+        $queryBuilder = $em->getRepository(Question::class)->createQueryBuilder('q');
+
+
+        if ($content) {
+            $queryBuilder->andWhere('q.content LIKE :content')
+                         ->setParameter('content', '%'.$content.'%');
+        }
+
+        if ($category_id) {
+            $category = $em->getRepository(Category::class)->find($category_id);
+            if (!$category) {
+                return new JsonResponse(['error' => 'Category not found'], 404);
+            }
+            $queryBuilder->andWhere('q.category = :category')
+                         ->setParameter('category', $category);
+        }
+
+        $questions = $queryBuilder->getQuery()->getResult();
+        $data = [];
+        foreach ($questions as $question) {
+            $data[] = [
+                'id' => $question->getId(),
+                'content' => $question->getContent(),
+            ];
+        }
         return new JsonResponse($data);
     }
 }
