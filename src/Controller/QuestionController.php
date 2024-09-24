@@ -4,13 +4,16 @@ namespace App\Controller;
 
 use App\Entity\Question;
 use App\Entity\Category;
+use App\DTO\QuestionDto;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 use App\Repository\QuestionRepository;
+use App\Repository\CategoryRepository;
 use Symfony\Component\HttpKernel\Attribute\MapQueryParameter;
 
 class QuestionController extends AbstractController
@@ -37,7 +40,7 @@ class QuestionController extends AbstractController
                 'category' => $question->getCategory()->getId(),
             ];
         }
-
+       
         return new JsonResponse($data);
     }
 
@@ -52,7 +55,7 @@ $connection = $this->entityManager->getConnection();
 $result = $connection->executeQuery($sql); 
 
 $questions = $result->fetchAllAssociative(); 
-
+// dd($result); // console.log
 return new JsonResponse($questions);
 }
 
@@ -228,5 +231,38 @@ return new JsonResponse($questions);
             ];
         }
         return new JsonResponse($data);
+    }
+
+
+
+    // call with DTO
+    #[Route('/api/question', methods: ['POST'],name: 'create_questions_DTO')]
+    public function createQuestionDTO(Request $request, EntityManagerInterface $em, CategoryRepository $categoryRepo): JsonResponse
+    {
+        $data = json_decode($request->getContent(), true);
+        $category = $categoryRepo->find($data['categoryId']);
+        
+        if (!$category) {
+            return new JsonResponse(['message' => 'Category not found'], 404);
+        }
+
+        $question = new Question();
+        $question->setContent($data['content']);
+        $question->setCategory($category);
+        
+        $em->persist($question);
+        $em->flush();
+
+        $dto = new QuestionDto($question->getId(), $question->getContent(), $category->getId(), null);
+
+        return $this->json($dto);
+    }
+
+
+    //event listen
+    #[Route('/error', name: 'error_test')]
+    public function errorTest(): Response
+    {
+        throw new \Exception('This is a test exception!');
     }
 }

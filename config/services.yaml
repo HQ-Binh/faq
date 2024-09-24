@@ -20,5 +20,20 @@ services:
             - '../src/Entity/'
             - '../src/Kernel.php'
 
+    App\EventListener\ExceptionListener:
+        tags: [kernel.event_listener]
+    App\EventSubscriber\ExceptionSubscriber:
+        tags: [kernel.event_listener]
+    App\EventListener\MyMultiListener:
+        tags:
+            # - { name: kernel.event_listener, event: 'foo', method: 'onFoo' }
+            - { name: kernel.event_listener, event: kernel.request, method: onFoo }
+            - { name: kernel.event_listener, event: 'bar', method: 'onBarEvent' }
+            - { name: kernel.event_listener, event: CustomEvent::class, method: 'onCustomEvent' }
+
+    App\Controller\EventController:
+        tags: ['controller.service_arguments']
+     
+
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
