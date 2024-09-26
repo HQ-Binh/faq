@@ -30,7 +30,9 @@ services:
             - { name: kernel.event_listener, event: kernel.request, method: onFoo }
             - { name: kernel.event_listener, event: 'bar', method: 'onBarEvent' }
             - { name: kernel.event_listener, event: CustomEvent::class, method: 'onCustomEvent' }
-
+    App\Security\JsonLoginSuccessHandler:
+        arguments:
+            $logger: '@logger'
     App\Controller\EventController:
         tags: ['controller.service_arguments']
      

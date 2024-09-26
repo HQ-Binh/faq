@@ -160,4 +160,48 @@ public function show(
     return new JsonResponse($data);
 }
 
+#[Route('/api/security/answers-auth', name: 'api_answers-auth', methods: ['GET'])]
+public function getAllAnswersAuth(Request $request): JsonResponse
+{
+    // Khởi động session nếu chưa bắt đầu
+    if (!$request->getSession()->isStarted()) {
+        $request->getSession()->start();
+    }
+
+    // Kiểm tra xem sessionId có hợp lệ không
+    $sessionId = $request->cookies->get('MYSESSIONID'); // Tên cookie bạn đã cấu hình
+    if (!$sessionId) {
+        return new JsonResponse(['error' => 'Cookie not found'], JsonResponse::HTTP_UNAUTHORIZED);
+    }
+
+    // if ($this->getUser()) {
+    //     $user = $this->getUser();
+    //     return new JsonResponse($user);
+    // }
+    var_dump($sessionId);
+
+    if (!$request->getSession()->isStarted()) {
+        return new JsonResponse(['error' => 'Session not started'], JsonResponse::HTTP_UNAUTHORIZED);
+    }
+
+    // Kiểm tra sessionId
+    if ($sessionId && $request->getSession()->getId() !== $sessionId) {
+        return new JsonResponse(['error' => 'Invalid session ID'], JsonResponse::HTTP_UNAUTHORIZED);
+    }
+
+    $answers = $this->entityManager->getRepository(Answer::class)->findAll();
+
+    $data = [];
+    foreach ($answers as $answer) {
+        $data[] = [
+            'id' => $answer->getId(),
+            'content' => $answer->getContent(), 
+            'question' => $answer->getQuestion()->getId(), 
+        ];
+    }
+
+    return new JsonResponse($data);
+}
+
+
 }
