@@ -198,6 +198,12 @@ public function protectedRoute(Request $request): JsonResponse
 {
     try {
         $user = $this->jwtAuthService->authenticate($request);
+         // Kiểm tra nếu người dùng không có role 'ROLE_USER', từ chối truy cập
+         if (!in_array('ROLE_USER', $user->getRoles())) {
+            return new JsonResponse(['error' => 'Access Denied.'], JsonResponse::HTTP_FORBIDDEN);
+        }
+       
+    
         $answers = $this->entityManager->getRepository(Answer::class)->findAll();
 
     $data = [];

@@ -27,7 +27,8 @@ class AuthenticationService
 
         // Kiểm tra sessionId từ cookie
         $sessionId = $request->cookies->get('MYSESSIONID'); // Tên cookie đã cấu hình
-        var_dump($sessionId);
+        $seasion=$request->getSession()->getMetadataBag()->getLastUsed();
+        var_dump($seasion);
         if (!$sessionId) {
             return new JsonResponse(['error' => 'Cookie not found'], JsonResponse::HTTP_UNAUTHORIZED);
         }

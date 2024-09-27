@@ -29,11 +29,9 @@ class RegistrationController extends AbstractController
             return new JsonResponse(['error' => 'Invalid data'], 400);
         }
 
-        // Tạo đối tượng User
         $user = new User();
         $user->setEmail($data['email']);
 
-        // Mã hóa mật khẩu
         $hashedPassword = $passwordHasher->hashPassword(
             $user,
             $data['password']
@@ -50,7 +48,7 @@ class RegistrationController extends AbstractController
             return new JsonResponse(['errors' => $errorMessages], 400);
         }
 
-        // Lưu người dùng vào cơ sở dữ liệu
+        // Lưu người dùng vào data
         $entityManager->persist($user);
         $entityManager->flush();
 

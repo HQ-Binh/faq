@@ -28,7 +28,7 @@ class JsonLoginSuccessHandler implements AuthenticationSuccessHandlerInterface
     {
         // Lấy thông tin người dùng từ token
         $user = $token->getUser();
-        var_dump($user);
+        // var_dump($user);
        
             // Khởi tạo một session mới
             if (!$request->getSession()->isStarted()) {
@@ -37,6 +37,8 @@ class JsonLoginSuccessHandler implements AuthenticationSuccessHandlerInterface
             
             // Lấy session ID mới
             $sessionId = $request->getSession()->getId();
+            $seasion=$request->getSession()->getMetadataBag()->getLifetime();
+            var_dump($seasion);
             // Tạo JWT token
         $jwt = $this->jwtManager->create($user); // Tạo token từ thông tin người dùng
     // Mã hóa thông tin người dùng
@@ -54,10 +56,10 @@ class JsonLoginSuccessHandler implements AuthenticationSuccessHandlerInterface
     $this->tokenStorage->setToken($token);
     
 
-            var_dump($sessionId);
+            // var_dump($sessionId);
             $this->tokenStorage->setToken($token);
             $tokenResult = $this->tokenStorage->getToken();
-            var_dump($tokenResult->getUser());
+            // var_dump($tokenResult->getUser());
         
         // Tạo phản hồi JSON với thông tin người dùng (có thể tùy chỉnh)
          $response= new JsonResponse([
