@@ -9,6 +9,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Http\Authentication\AuthenticationSuccessHandlerInterface;
 use Symfony\Component\HttpFoundation\Cookie;
+use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 
@@ -16,11 +17,12 @@ class JsonLoginSuccessHandler implements AuthenticationSuccessHandlerInterface
 {
     private $logger;
     private $tokenStorage;
-
-    public function __construct(LoggerInterface $logger,TokenStorageInterface $tokenStorage)
+    private $jwtManager;
+    public function __construct(LoggerInterface $logger,TokenStorageInterface $tokenStorage, JWTTokenManagerInterface $jwtManager)
     {
         $this->logger = $logger; // Khởi tạo logger
         $this->tokenStorage = $tokenStorage;
+        $this->jwtManager = $jwtManager;
     }
     public function onAuthenticationSuccess(Request $request, TokenInterface $token): JsonResponse
     {
@@ -35,12 +37,14 @@ class JsonLoginSuccessHandler implements AuthenticationSuccessHandlerInterface
             
             // Lấy session ID mới
             $sessionId = $request->getSession()->getId();
-
+            // Tạo JWT token
+        $jwt = $this->jwtManager->create($user); // Tạo token từ thông tin người dùng
     // Mã hóa thông tin người dùng
     $userData = [
         'email' => $user->getUserIdentifier(),
         'roles' => $user->getRoles(),
         'sessionId' => $sessionId,
+        'jwt' => $jwt,
     ];
 
     // JSON encode và mã hóa base64 để lưu vào cookie
@@ -60,7 +64,8 @@ class JsonLoginSuccessHandler implements AuthenticationSuccessHandlerInterface
             'status' => 'User logged in successfully!',
             'sessionId' => $sessionId,
             'email' => $user->getUserIdentifier(),  // lấy email
-            'roles' => $user->getRoles(),            // Lấy quyền của người dùng
+            'roles' => $user->getRoles(),   
+            'jwt' => $jwt,         // Lấy quyền của người dùng
         ], JsonResponse::HTTP_OK);
         // Đặt cookie chứa thông tin người dùng đã mã hóa
     $response->headers->setCookie(new Cookie('USERDATA', $encodedUserData, time() + 3600, '/', null, false, true));

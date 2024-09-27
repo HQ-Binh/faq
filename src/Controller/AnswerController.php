@@ -11,17 +11,21 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use App\Repository\AnswerRepository;
 use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 use App\Security\AuthenticationService;
+use App\Security\JwtAuthenticationService;
+use Symfony\Component\Security\Core\Exception\AuthenticationException;
 
 #[Route('/api/answers')]
 class AnswerController extends AbstractController
 {
     private EntityManagerInterface $entityManager;
     private $authenticationService;
+    private $jwtAuthService;
 
-    public function __construct(EntityManagerInterface $entityManager,AuthenticationService $authenticationService)
+    public function __construct(EntityManagerInterface $entityManager,AuthenticationService $authenticationService,JwtAuthenticationService $jwtAuthService)
     {
         $this->entityManager = $entityManager;
         $this->authenticationService = $authenticationService;
+        $this->jwtAuthService = $jwtAuthService;
     }
 
     #[Route('', name: 'answer_index', methods: ['GET'])]
@@ -167,29 +171,12 @@ public function show(
 public function getAllAnswersAuth(Request $request): JsonResponse
 {
     $user=null;
-    // Khởi động session nếu chưa bắt đầu
-    // if (!$request->getSession()->isStarted()) {
-    //     $request->getSession()->start();
-    // }
-
-    // // Kiểm tra xem sessionId có hợp lệ không
-    // $sessionId = $request->cookies->get('MYSESSIONID'); // Tên cookie bạn đã cấu hình
-    // if (!$sessionId) {
-    //     return new JsonResponse(['error' => 'Cookie not found'], JsonResponse::HTTP_UNAUTHORIZED);
-    // }
-    // var_dump($sessionId);
-
-    // if (!$request->getSession()->isStarted()) {
-    //     return new JsonResponse(['error' => 'Session not started'], JsonResponse::HTTP_UNAUTHORIZED);
-    // }
+   
     $authResponse = $this->authenticationService->authenticate($request,$user);
         if ($authResponse) {
             return $authResponse;
         };
-    // // Kiểm tra sessionId
-    // if ($sessionId && $request->getSession()->getId() !== $sessionId) {
-    //     return new JsonResponse(['error' => 'Invalid session ID'], JsonResponse::HTTP_UNAUTHORIZED);
-    // }
+    
     var_dump($user); 
     $answers = $this->entityManager->getRepository(Answer::class)->findAll();
 
@@ -205,5 +192,31 @@ public function getAllAnswersAuth(Request $request): JsonResponse
     return new JsonResponse($data);
 }
 
+
+#[Route('/api/protected', name: 'api_protected', methods: ['GET'])]
+public function protectedRoute(Request $request): JsonResponse
+{
+    try {
+        $user = $this->jwtAuthService->authenticate($request);
+        $answers = $this->entityManager->getRepository(Answer::class)->findAll();
+
+    $data = [];
+    foreach ($answers as $answer) {
+        $data[] = [
+            'id' => $answer->getId(),
+            'content' => $answer->getContent(), 
+            'question' => $answer->getQuestion()->getId(), 
+        ];
+    }
+        return new JsonResponse([
+            'status' => 'success',
+            'user' => $user->getUserIdentifier(),
+            'roles'=> $user->getRoles(),
+            'data'=>$data
+        ]);
+    } catch (AuthenticationException $e) {
+        return new JsonResponse(['error' => $e->getMessage()], JsonResponse::HTTP_UNAUTHORIZED);
+    }
+}
 
 }

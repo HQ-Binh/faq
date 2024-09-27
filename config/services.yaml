@@ -35,6 +35,11 @@ services:
             $logger: '@logger'
     App\Controller\EventController:
         tags: ['controller.service_arguments']
+    App\Security\JwtAuthenticationService:
+        arguments:
+            $jwtManager: '@lexik_jwt_authentication.jwt_manager'
+            $tokenStorage: '@security.token_storage'
+            $userProvider: '@security.user.provider.concrete.app_user_provider' # 'app_user_provider' la2 tên provider của bạn
      
 
     # add more service definitions when explicit configuration is needed
