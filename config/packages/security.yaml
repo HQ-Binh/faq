@@ -8,7 +8,6 @@ security:
             entity:
                 class: App\Entity\User
                 property: email
-
     firewalls:
         dev:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
@@ -23,35 +22,19 @@ security:
                 password_path: password
                 success_handler: App\Security\JsonLoginSuccessHandler
                 failure_handler: App\Security\JsonLoginFailureHandler
-
+            login_throttling:
+                   max_attempts: 3 
+                   interval: '10 minutes'
         register:
             pattern: ^/api/register
-            stateless: true
+            stateless: false
             security: false  # Không yêu cầu bảo mật cho đăng ký
-        # logout:
-        #         pattern: ^/api/logout
-        #         stateless: true
-        #         security: false
-        #         invalidate_session: true
-                
-    #router nào để vào fireware thì sẽ có authenticated
+
         main:
             pattern: ^/api/security
             stateless: false
             lazy: true
             provider: app_user_provider
-          
-            # form_login:
-            #     check_path: /api/login
-            #     login_path: /api/login
-            #     username_parameter: email
-            #     password_parameter: password
-            #     enable_csrf: true
-            #     csrf_parameter: _csrf_token
-            #     success_handler: App\Security\JsonLoginSuccessHandler
-            #     failure_handler: App\Security\JsonLoginFailureHandler
-            
-            
 
     access_control:
         - { path: ^/api/register, roles: IS_AUTHENTICATED_ANONYMOUSLY }

@@ -2,6 +2,12 @@
 framework:
     secret: '%env(APP_SECRET)%'
     csrf_protection: true
+    rate_limiter:
+        login_limiter:
+            policy: sliding_window
+            limit: 5  # Số lần đăng nhập tối đa
+            interval: 1 minute  # Thời gian cho phép
+            cache_pool: my_cache_pool  # Đảm bảo bạn có cache pool này
    
 
     # Note that the session will be started ONLY if you read or write from it.

@@ -10,15 +10,18 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use App\Repository\AnswerRepository;
 use Symfony\Bridge\Doctrine\Attribute\MapEntity;
+use App\Security\AuthenticationService;
 
 #[Route('/api/answers')]
 class AnswerController extends AbstractController
 {
     private EntityManagerInterface $entityManager;
+    private $authenticationService;
 
-    public function __construct(EntityManagerInterface $entityManager)
+    public function __construct(EntityManagerInterface $entityManager,AuthenticationService $authenticationService)
     {
         $this->entityManager = $entityManager;
+        $this->authenticationService = $authenticationService;
     }
 
     #[Route('', name: 'answer_index', methods: ['GET'])]
@@ -164,30 +167,28 @@ public function show(
 public function getAllAnswersAuth(Request $request): JsonResponse
 {
     // Khởi động session nếu chưa bắt đầu
-    if (!$request->getSession()->isStarted()) {
-        $request->getSession()->start();
-    }
-
-    // Kiểm tra xem sessionId có hợp lệ không
-    $sessionId = $request->cookies->get('MYSESSIONID'); // Tên cookie bạn đã cấu hình
-    if (!$sessionId) {
-        return new JsonResponse(['error' => 'Cookie not found'], JsonResponse::HTTP_UNAUTHORIZED);
-    }
-
-    // if ($this->getUser()) {
-    //     $user = $this->getUser();
-    //     return new JsonResponse($user);
+    // if (!$request->getSession()->isStarted()) {
+    //     $request->getSession()->start();
     // }
-    var_dump($sessionId);
 
-    if (!$request->getSession()->isStarted()) {
-        return new JsonResponse(['error' => 'Session not started'], JsonResponse::HTTP_UNAUTHORIZED);
-    }
+    // // Kiểm tra xem sessionId có hợp lệ không
+    // $sessionId = $request->cookies->get('MYSESSIONID'); // Tên cookie bạn đã cấu hình
+    // if (!$sessionId) {
+    //     return new JsonResponse(['error' => 'Cookie not found'], JsonResponse::HTTP_UNAUTHORIZED);
+    // }
+    // var_dump($sessionId);
 
-    // Kiểm tra sessionId
-    if ($sessionId && $request->getSession()->getId() !== $sessionId) {
-        return new JsonResponse(['error' => 'Invalid session ID'], JsonResponse::HTTP_UNAUTHORIZED);
-    }
+    // if (!$request->getSession()->isStarted()) {
+    //     return new JsonResponse(['error' => 'Session not started'], JsonResponse::HTTP_UNAUTHORIZED);
+    // }
+    $authResponse = $this->authenticationService->authenticate($request);
+        if ($authResponse) {
+            return $authResponse;
+        };
+    // // Kiểm tra sessionId
+    // if ($sessionId && $request->getSession()->getId() !== $sessionId) {
+    //     return new JsonResponse(['error' => 'Invalid session ID'], JsonResponse::HTTP_UNAUTHORIZED);
+    // }
 
     $answers = $this->entityManager->getRepository(Answer::class)->findAll();
 
