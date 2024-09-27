@@ -27,16 +27,29 @@ class JsonLoginSuccessHandler implements AuthenticationSuccessHandlerInterface
         // Lấy thông tin người dùng từ token
         $user = $token->getUser();
         var_dump($user);
-        // Hủy session cũ
-        //  if ($request->getSession()) {
-            //     $request->getSession()->invalidate();
-            // }
-            
+       
             // Khởi tạo một session mới
-            $request->getSession()->start();
+            if (!$request->getSession()->isStarted()) {
+                $request->getSession()->start();
+            }
             
             // Lấy session ID mới
             $sessionId = $request->getSession()->getId();
+
+    // Mã hóa thông tin người dùng
+    $userData = [
+        'email' => $user->getUserIdentifier(),
+        'roles' => $user->getRoles(),
+        'sessionId' => $sessionId,
+    ];
+
+    // JSON encode và mã hóa base64 để lưu vào cookie
+    $encodedUserData = base64_encode(json_encode($userData));
+
+    // Đặt token vào TokenStorage
+    $this->tokenStorage->setToken($token);
+    
+
             var_dump($sessionId);
             $this->tokenStorage->setToken($token);
             $tokenResult = $this->tokenStorage->getToken();
@@ -49,6 +62,9 @@ class JsonLoginSuccessHandler implements AuthenticationSuccessHandlerInterface
             'email' => $user->getUserIdentifier(),  // lấy email
             'roles' => $user->getRoles(),            // Lấy quyền của người dùng
         ], JsonResponse::HTTP_OK);
+        // Đặt cookie chứa thông tin người dùng đã mã hóa
+    $response->headers->setCookie(new Cookie('USERDATA', $encodedUserData, time() + 3600, '/', null, false, true));
+    // $response->headers->setCookie(new Cookie('MYSESSIONID', $encodedUserData, time() + 3600, '/', null, false, true));
         $response->headers->setCookie(new Cookie('MYSESSIONID', $sessionId, time() + 3600)); 
         return $response;
     }

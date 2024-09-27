@@ -13,11 +13,12 @@ framework:
     # Note that the session will be started ONLY if you read or write from it.
     session:
             handler_id: null           # Sử dụng session mặc định
+            gc_maxlifetime: 1440       # Thời gian sống của session (phút)
             name: MYSESSIONID          # Tên cookie session
             cookie_secure: auto        # Chỉ sử dụng cookie qua HTTPS
             cookie_httponly: true      # Ngăn chặn JavaScript truy cập vào cookie
             cookie_samesite: lax       # Cấu hình SameSite cho cookie
-            gc_maxlifetime: 1440       # Thời gian sống của session (phút)
+            cookie_lifetime: 3600     # Thời gian sống của cookie (trong giây)
 
     #esi: true
     #fragments: true

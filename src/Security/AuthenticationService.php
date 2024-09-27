@@ -18,23 +18,39 @@ class AuthenticationService
         $this->tokenStorage = $tokenStorage;
     }
 
-    public function authenticate(Request $request): ?JsonResponse
+    public function authenticate(Request $request,&$user = null): ?JsonResponse
     {
          if (!$request->getSession()->isStarted()) {
-        $request->getSession()->start();
-    }
+             $request->getSession()->start();
+
+        }
 
         // Kiểm tra sessionId từ cookie
-        $sessionId = $request->cookies->get('MYSESSIONID'); // Tên cookie bạn đã cấu hình
+        $sessionId = $request->cookies->get('MYSESSIONID'); // Tên cookie đã cấu hình
+        var_dump($sessionId);
         if (!$sessionId) {
             return new JsonResponse(['error' => 'Cookie not found'], JsonResponse::HTTP_UNAUTHORIZED);
         }
+        $encodedUserData = $request->cookies->get('USERDATA');
+        // Lấy thông tin người dùng từ session
+        // $user = $request->getSession()->getName(); 
+    if ($encodedUserData) {
+        // Giải mã dữ liệu từ base64
+        $user = json_decode(base64_decode($encodedUserData), true);
+        $user['last_login'] = new \DateTime();
+        var_dump($user); // Trả về thông tin người dùng
+    }
 
         // Kiểm tra sessionId từ session
         if ($sessionId && $request->getSession()->getId() !== $sessionId) {
             return new JsonResponse(['error' => 'Invalid session ID'], JsonResponse::HTTP_UNAUTHORIZED);
         }
+        
+        if (!$user) {
+            return new JsonResponse(['error' => 'User not authenticated'], JsonResponse::HTTP_UNAUTHORIZED);
+        }
+        var_dump($user);
 
-        return null; // Không có lỗi
+        return null;
     }
 }

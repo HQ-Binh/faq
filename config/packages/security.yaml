@@ -40,9 +40,9 @@ security:
         - { path: ^/api/register, roles: IS_AUTHENTICATED_ANONYMOUSLY }
         - { path: ^/api/login, roles: IS_AUTHENTICATED_ANONYMOUSLY }
         - { path: ^/api/questions-sql, roles: IS_AUTHENTICATED_ANONYMOUSLY }
-        - { path: ^/api/answer, roles: ROLE_USER }
+        - { path: ^/api/answer, roles: IS_AUTHENTICATED_ANONYMOUSLY }
         - { path: ^/api/category, roles: IS_AUTHENTICATED_ANONYMOUSLY }
-        - { path: ^/api, roles: IS_AUTHENTICATED_FULLY }  
+        # - { path: ^/api, roles: IS_AUTHENTICATED_FULLY }  
 
 when@test:
     security:

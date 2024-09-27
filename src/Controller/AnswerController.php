@@ -166,6 +166,7 @@ public function show(
 #[Route('/api/security/answers-auth', name: 'api_answers-auth', methods: ['GET'])]
 public function getAllAnswersAuth(Request $request): JsonResponse
 {
+    $user=null;
     // Khởi động session nếu chưa bắt đầu
     // if (!$request->getSession()->isStarted()) {
     //     $request->getSession()->start();
@@ -181,7 +182,7 @@ public function getAllAnswersAuth(Request $request): JsonResponse
     // if (!$request->getSession()->isStarted()) {
     //     return new JsonResponse(['error' => 'Session not started'], JsonResponse::HTTP_UNAUTHORIZED);
     // }
-    $authResponse = $this->authenticationService->authenticate($request);
+    $authResponse = $this->authenticationService->authenticate($request,$user);
         if ($authResponse) {
             return $authResponse;
         };
@@ -189,7 +190,7 @@ public function getAllAnswersAuth(Request $request): JsonResponse
     // if ($sessionId && $request->getSession()->getId() !== $sessionId) {
     //     return new JsonResponse(['error' => 'Invalid session ID'], JsonResponse::HTTP_UNAUTHORIZED);
     // }
-
+    var_dump($user); 
     $answers = $this->entityManager->getRepository(Answer::class)->findAll();
 
     $data = [];
