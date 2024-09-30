@@ -40,7 +40,11 @@ services:
             $jwtManager: '@lexik_jwt_authentication.jwt_manager'
             $tokenStorage: '@security.token_storage'
             $userProvider: '@security.user.provider.concrete.app_user_provider' # 'app_user_provider' la2 tên provider của bạn
-     
+    Symfony\Component\HttpFoundation\Session\Storage\Handler\PdoSessionHandler:
+        arguments:
+            - '%env(DATABASE_URL)%'
+            # - { db_table: 'sessions', db_id_col: 'id',db_data_col: 'sessions_data',db_time_col: 'sessions_time',db_lifetime_col: 'sessions_lifetime'}
+            - { db_table: 'sessions'} #thay the cau hinh mac dinh db_connection_options thanh2 session_ip
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones

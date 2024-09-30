@@ -33,8 +33,7 @@ class AuthenticationService
             return new JsonResponse(['error' => 'Cookie not found'], JsonResponse::HTTP_UNAUTHORIZED);
         }
         $encodedUserData = $request->cookies->get('USERDATA');
-        // Lấy thông tin người dùng từ session
-        // $user = $request->getSession()->getName(); 
+     
     if ($encodedUserData) {
         // Giải mã dữ liệu từ base64
         $user = json_decode(base64_decode($encodedUserData), true);
